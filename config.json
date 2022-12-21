@@ -219,7 +219,7 @@
     },
     "wallet": {
       "checkInterval": 180,
-      "rpcMethod": "getbalance"
+      "rpcMethod": "/balance"
     }
   },
   "prices": {
