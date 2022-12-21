@@ -23,7 +23,7 @@
   "poolServer": {
     "enabled": true,
     "clusterForks": "auto",
-    "poolAddress": "SNW1bFWQ2SkffXG9FkXpQCeWAagdmNjY79osPyuEoFWhZiFzVAGXt9kckmJvhcMV97MgegggtmSQWh3mCdRFfFYs3HC89Y8Sfr",
+    "poolAddress": "**WALLET ADDRESS**",
     "intAddressPrefix": null,
     "blockRefreshInterval": 1000,
     "minerTimeout": 900,
@@ -83,22 +83,22 @@
     }
   },
   "payments": {
-    "enabled": false,
+    "enabled": true,
     "interval": 1800,
     "maxAddresses": 50,
-    "mixin": 3,
+    "mixin": 0,
     "priority": 0,
     "transferFee": 50000,
     "minerPayFee": true,
-    "minPayment": 500000000,
-    "maxPayment": 7500000000,
-    "maxTransactionAmount": 15000000000,
-    "denomination": 10000
+    "minPayment": 1000000,
+    "maxPayment": 10000000000,
+    "maxTransactionAmount": 10000000000,
+    "denomination": 1
   },
   "blockUnlocker": {
-    "enabled": false,
+    "enabled": true,
     "interval": 30,
-    "depth": 30,
+    "depth": 20,
     "poolFee": 0.1,
     "devDonation": 0.0,
     "networkFee": 0.0,
@@ -112,7 +112,7 @@
     "port": 8117,
     "blocks": 30,
     "payments": 30,
-    "password": "your_password",
+    "password": "**ADMIN PANEL PASSWORD**",
     "ssl": false,
     "sslPort": 8118,
     "sslCert": "./cert.pem",
