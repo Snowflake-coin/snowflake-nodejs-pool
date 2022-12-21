@@ -28,11 +28,6 @@
           </h1>
           <p class="earning-label" tkey="poolHashrate">Pool Hashrate</p>
 
-          <h1 class="cush1">
-            <span class="mediumText" id="soloHashrate">N/A</span>
-            <span class="smallText">(<span id="soloHashPower">0%</span>)
-          </h1>
-          <p class="earning-label">Solo Hashrate</p><br>
           <a data-page="worker_stats.html" href="#worker_stats" class="statement-link" id="btnWorkerStats">Worker
             Stats<i class="fa fa-angle-right mg-l-5"></i>
           </a>
@@ -72,14 +67,6 @@
                   <span tkey="workersCount">workers</span>)</span>
               </h2>
               <p class="item-label" style="font-size:13px;">Pool: Miners / Workers</p>
-
-              <h2 style="color: white;">
-                <span id="soloMiners">N/A</span>
-                <span>(<strong>
-                    <span id="soloWorkers">N/A</span></strong>
-                  <span tkey="workersCount">workers</span>)</span>
-              </h2>
-              <p class="item-label" style="font-size:13px;">Solo: Miners / Workers</p>
             </div>
           </div>
           <!-- dash-headline-item-three -->
@@ -366,9 +353,6 @@
 
       updateText('poolMiners', lastStats.pool.miners.toString());
       updateText('poolWorkers', lastStats.pool.workers.toString());
-
-      updateText('soloMiners', lastStats.pool.minersSolo.toString());
-      updateText('soloWorkers', lastStats.pool.workersSolo.toString());
 
       var totalFee = lastStats.config.fee;
       if (Object.keys(lastStats.config.donation).length) {
