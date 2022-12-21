@@ -1,0 +1,248 @@
+<div class="container">
+	<!-- Market -->
+	<div class="slim-pageheader">
+		<ol class="breadcrumb slim-breadcrumb">
+			<li class="breadcrumb-item"><a href="#">Home</a></li>
+			<li class="breadcrumb-item active" aria-current="page"><span tkey="market">Market / Calculator</span></li>
+		</ol>
+		<h6 class="slim-pagetitle"><span tkey="market">Market / Calculator</span></h6>
+	</div><!-- slim-pageheader -->
+
+	<!-- Mining Profit Calculator -->
+	<div class="card" id="miningProfitCalc">
+		<div class="card-header tx-medium bd-0 tx-white bg-primary-dark"><span tkey="estimateProfit">Estimate Mining
+				Profits</span></div>
+		<div class="card-body" id="calcHashHolder">
+			<div class="input-group">
+				<input class="form-control" id="calcHashRate" tplaceholder="enterYourHashrate"
+					placeholder="Enter Your Hash Rate" type="number">
+				<div class="input-group-btn">
+					<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" id="calcHashDropdown">
+						<span id="calcHashUnit" data-mul="1">KH/s</span> <span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu dropdown-menu-right" role="menu" id="calcHashUnits">
+						<li><a href="#" data-mul="0">H/s</a></li>
+						<li><a href="#" data-mul="1">KH/s</a></li>
+						<li><a href="#" data-mul="2">MH/s</a></li>
+					</ul>
+				</div>
+				<span class="input-group-addon">=</span>
+				<span class="input-group-addon" id="calcHashResultsHolder">
+					<div id="calcHashAmount">
+						<span id="calcHashAmount1"></span>
+					</div>
+					<div id="calcHashPeriod">
+						<span tkey="perDay">per day</span>
+					</div>
+				</span>
+				<div id="addHashrateWrapper" class="mg-t-20">
+					<label id="addHashrateLabel">Add your hashrate to the network</label>
+					<div class="toggle-wrapper">
+						<div class="toggle toggle-modern" id="hashrateToggle" style="height: 26px; width: 60px;">
+							<div class="toggle-slide">
+								<div class="toggle-inner" style="width: 94px; margin-left: 0px;">
+									<div class="toggle-on active"
+										style="height: 26px; width: 47px; text-indent: -8.66667px; line-height: 26px;">ON</div>
+									<div class="toggle-blob" style="height: 26px; width: 26px; margin-left: -13px;"></div>
+									<div class="toggle-off"
+										style="height: 26px; width: 47px; margin-left: -13px; text-indent: 8.66667px; line-height: 26px;">
+										OFF</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="test"></div>
+</div>
+
+<!-- Javascript -->
+<script>
+	// Market settings
+	var priceSource = 'cryptonator';
+	var priceCurrency = 'USD';
+
+	$('.toggle').toggles({
+		on: true,
+		width: 65,
+		height: 30
+	});
+
+	if (typeof cryptonatorWidget !== 'undefined' && typeof marketCurrencies === 'undefined') {
+		var marketCurrencies = cryptonatorWidget;
+	}
+
+	// Charts initialized
+	var chartsInitialized = false;
+	var intervalChartsUpdate;
+
+	// Update current page
+	currentPage = {
+		destroy: function () {
+		},
+		update: function () {
+			priceSource = lastStats.config.priceSource || 'cryptonator';
+			priceCurrency = lastStats.config.priceCurrency || 'USD';
+
+			updateText('priceChartCurrency', priceCurrency);
+			updateText('profitChartCurrency', priceCurrency);
+
+			calcEstimateProfit();
+		}
+	};
+
+	// Handle tooltip
+	$(function () {
+		$('[data-toggle="tooltip"]').tooltip();
+	});
+
+	/**
+	 * Market prices
+	 **/
+
+	var marketPriceChart = null;
+	var USDperCCX = null;
+
+	// Returns an array of dates between the two dates
+	var getDates = function (startDate, endDate) {
+		var dates = [],
+			currentDate = startDate,
+			addDays = function (days) {
+				var date = new Date(this.valueOf());
+				date.setDate(date.getDate() + days);
+				return date;
+			};
+		while (currentDate <= endDate) {
+			dates.push(moment(currentDate).format("MMM Do YYYY"));
+			currentDate = addDays.call(currentDate, 1);
+		}
+		return dates;
+	};
+
+	// get conceal market data
+	$.getJSON("https://api.coingecko.com/api/v3/coins/conceal?sparkline=true", function (data) {
+		USDperCCX = data.market_data.current_price.usd;
+		$("#CCXToUSD").html("$ " + data.market_data.current_price.usd.toFixed(2));
+		$("#CCXToBTC").html(data.market_data.current_price.btc.toFixed(8));
+		$("#marketcap").html("$ " + data.market_data.market_cap.usd.toFixed(0));
+		$("#marketcapRank").html("(RANK " + data.market_cap_rank + ")");
+		$("#dailyVolume").html("$ " + data.market_data.total_volume.usd.toFixed(0));
+
+		if (marketPriceChart) {
+			marketPriceChart.destroy();
+		}
+
+		var timeLabels = [];
+		var dataLength = data.market_data.sparkline_7d.price.length;
+		var durationAsMS = moment.duration(7 / dataLength, 'd').asMilliseconds();
+
+		for (i = dataLength - 1; i >= 0; i--) {
+			timeLabels.push(moment().subtract(durationAsMS * (i + 1), 'ms').format('YYYY-MM-DD'));
+		}
+
+		marketPriceChart = new Chart(document.getElementById('chartMarketPriceCanvas'), {
+			type: 'line',
+			data: {
+				labels: timeLabels,
+				datasets: [{
+					data: data.market_data.sparkline_7d.price,
+					backgroundColor: 'rgba(255,165,0,0.2)',
+					fill: true,
+					borderWidth: 0,
+					pointRadius: 1,
+					borderColor: '#FFA500'
+				}]
+			},
+			options: {
+				animation: false,
+				responsive: true,
+				maintainAspectRatio: false,
+				legend: {
+					display: false,
+					labels: {
+						display: false
+					}
+				},
+				scales: {
+					yAxes: [{
+						ticks: {
+							maxTicksLimit: 5,
+							fontSize: 10,
+							callback: function (value, index, values) {
+								return value.toFixed(2) + '$';
+							}
+						},
+						gridLines: {
+							color: 'rgba(255,255,255,.08)'
+						}
+					}],
+					xAxes: [{
+						ticks: {
+							autoSkip: true,
+							maxTicksLimit: 7,
+							maxRotation: 0,
+							minRotation: 0
+						},
+						gridLines: {
+							color: 'rgba(255, 255, 255, .08)'
+						},
+					}]
+				},
+				hover: {
+					mode: 'nearest',
+					intersect: true
+				},
+				tooltips: {
+					mode: 'index',
+					intersect: false,
+					callbacks: {
+						label: function (tooltipItem) {
+							return "$ " + Number(tooltipItem.yLabel).toFixed(4);
+						}
+					}
+				}
+			}
+		});
+	});
+
+	/**
+	 * Hash Profitability Calculator
+	 **/
+
+	// Automatically update profit calculation on key press
+	$('#calcHashRate').keyup(calcEstimateProfit).change(calcEstimateProfit);
+
+	// Click on button
+	$('#calcHashUnits > li > a').click(function (e) {
+		e.preventDefault();
+		$('#calcHashUnit').text($(this).text()).data('mul', $(this).data('mul'));
+		calcEstimateProfit();
+	});
+
+	$('#hashrateToggle').on('toggle', function (e, active) {
+		calcEstimateProfit();
+	});
+
+	// Calculate current estimation
+	function calcEstimateProfit() {
+		try {
+			var addHashrateToNetwork = $('#hashrateToggle').data('toggles').active;
+			var rateUnit = Math.pow(1000, parseInt($('#calcHashUnit').data('mul')));
+			var hashRate = parseFloat($('#calcHashRate').val()) * rateUnit;
+			var networkHash = lastStats.network.difficulty / lastStats.config.coinDifficultyTarget;
+			if (addHashrateToNetwork) {
+				networkHash = networkHash + hashRate;
+			}
+			var profit = lastStats.lastblock.reward * (1440 / 2) * (hashRate / networkHash);
+			if (profit) {
+				updateText('calcHashAmount1', getReadableCoins(profit, 2));
+				return;
+			}
+		}
+		catch (e) { }
+		updateText('calcHashAmount1', '');
+	}
+</script>
