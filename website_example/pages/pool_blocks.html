@@ -56,11 +56,9 @@
                 <thead>
                 <tr>
                     <th class="col1"><span tkey="timeFound">Time Found</span></th>
-                    <th class="col2">Type</th>
                     <th class="col2"><span tkey="reward">Reward</span></th>
                     <th class="col3"><span tkey="height">Height</span></th>
                     <th class="col4"><span tkey="difficulty">Difficulty</span></th>
-                    <th class="col5"><span>FOUND BY</span></th>
                     <th class="col5"><span tkey="blockHash">Block Hash</span></th>
                     <th class="col6"><span tkey="effort">Effort</span></th>
                     <th class="col7" title="How many more blocks network must mine before this block is matured"><span tkey="status">Status</span></th>
@@ -198,15 +196,13 @@ function generateChart(data) {
 function parseBlock(height, serializedBlock){
     var parts = serializedBlock.split(':');
     var block = {
-        type: (parts[0] == "prop" ? "<span style='color:#65b7ff'>Pool</span>" : "<span style='color:#9a65ff'>Solo</span>"),
         height: parseInt(height),
-        hash: parts[2],
-        time: parts[3],
-        difficulty: parseInt(parts[4]),
-        shares: parseInt(parts[5]),
-        orphaned: parts[6],
-        reward: parts[7],
-        foundBy: parts[1]
+        hash: parts[0],
+        time: parts[1],
+        difficulty: parseInt(parts[2]),
+        shares: parseInt(parts[3]),
+        orphaned: parts[4],
+        reward: parts[5]
     };
 
     var toGo = lastStats.config.depth - (lastStats.network.height - block.height) + 1;
@@ -266,11 +262,9 @@ function getBlockRowElement(block, jsonString){
     
     var columns =
         '<td class="col1">' + formatDate(block.time) + '</td>' +
-        '<td class="col2">' + block.type + '</td>' +
         '<td class="col2">' + reward.toLocaleString('en-US') + '</td>' +
         '<td class="col3">' + block.height.toLocaleString('en-US') + '</td>' +
         '<td class="col4">' + block.difficulty.toLocaleString('en-US') + '</td>' +
-        '<td class="col5">' + block.foundBy + '</td>' +
         '<td class="col5">' + formatBlockLink(block.hash, block.hash.match(/.{1,32}/g)[0] + '<br>' + block.hash.match(/.{1,32}/g)[1]) + '</td>' +
         '<td class="col6" title="' + block.shares + ' shares submitted">' + formatLuck(block.difficulty, block.shares) + '</td>' +
         '<td class="col7">' + block.maturity + '</td>';
